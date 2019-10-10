@@ -13,7 +13,7 @@ class MasterMind
             $this->_secret .= rand(0, 9);
         }
         $this->_nbEssais = 0;
-        $this->_essais=array();
+        $this->_essais = array();
     }
     public function getTaille()
     {
@@ -33,42 +33,50 @@ class MasterMind
     }
     private function essaiCorrecte($essai)
     {
-        if(strlen($essai->getEssai())==$this->_taille && is_string($essai->getEssai()))
-        {
-            for ($i=0; $i <$this->_taille; $i++) { 
-                if($essai->getEssai()[$i]<'0' || $essai->getEssai()[$i]>'9')
-                {
+        if (strlen($essai->getEssai()) == $this->_taille && is_string($essai->getEssai())) {
+            for ($i = 0; $i < $this->_taille; $i++) {
+                if ($essai->getEssai()[$i] < '0' || $essai->getEssai()[$i] > '9') {
                     return false;
                 }
             }
             return true;
         }
-        
     }
     //la fonction qui test un mot avec le mot secret
-    public function test($essai)
+    public function firstTest($essai)
     {
-        if($this->essaiCorrecte($essai)==true)
-        {
-            if($essai->getEssai()!=$this->_essais[$this->_nbEssais-1] && $this->_nbEssais !=0)
-            {
-                $this->_essais[$this->_nbEssais]=$essai;
-                $this->_essais[$this->_nbEssais]->test($this->_secret);
-                $this->_nbEssais++;
-            }
-        }
-        else 
-        {
-            echo 'erreur de saisie : '.$essai->getEssai().' n\'est pas acceptable <br>';
+
+        if ($this->essaiCorrecte($essai) == true) {
+            $this->_essais[$this->_nbEssais] = $essai;
+            $this->_essais[$this->_nbEssais]->test($this->_secret);
+            $this->_nbEssais++;
+        } else {
+            echo 'erreur de saisie : ' . $essai->getEssai() . ' n\'est pas acceptable <br>';
         }
     }
-    public function setEssais($essai,$i)
+
+    public function test($essai)
     {
-        $_essais[$i]=$essai;
+        if ($this->essaiCorrecte($essai) == true) {
+            
+            //if ($this-> getNbEssais() !=0 && $essai->getEssai() != ($this->_essais[$this->_nbEssais - 1]->getEssai())) {
+                $this->_essais[$this->_nbEssais] = $essai;
+                $this->_essais[$this->_nbEssais]->test($this->_secret);
+                $this->_nbEssais++;
+           // } else {
+                //echo 'raffraichissement <br>';
+            //}
+        } else {
+            echo 'erreur de saisie : ' . $essai->getEssai() . ' n\'est pas acceptable <br>';
+        }
+    }
+    public function setEssais($essai, $i)
+    {
+        $_essais[$i] = $essai;
     }
     public function isWinner()
     {
-        return  $this->getNbEssais()>0 && ($this->getEssai($this->getNbEssais() - 1)->getEssai() == $this->getSecret()) ;
+        return  $this->getNbEssais() > 0 && ($this->getEssai($this->getNbEssais() - 1)->getEssai() == $this->getSecret());
     }
 }
 

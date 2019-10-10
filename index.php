@@ -1,6 +1,12 @@
 <?php
 session_start();
 require 'MasterMind.php';
+if(isset($_POST['exit']))
+{
+    session_destroy();
+    unset($_POST);
+    unset($_SESSION);
+}
 ?>
 
 <!DOCTYPE html>
@@ -65,12 +71,21 @@ require 'MasterMind.php';
             <form action="" method="POST">
                 <label for="nom">Votre nom : </label>
                 <br>
-                <input type="text" name="nom" id="nom" required>
+                <input type="text" name="nom" id="nom">
                 <br>
                 <input type="submit" value="Jouer">
+                <br>
+                <input type="submit" name="load" value ="Load Partie" id="load">
+                
             </form>
         <?php
-        } else if (isset($_POST['nom']) || !isset($_SESSION['jeu'])) {   //premier essai
+        } else if (isset($_POST['nom']) || !isset($_SESSION['jeu']) || isset($_POST['load'])) {   //premier essai
+            if(isset($_COOKIE['nom']))
+            {
+                $_SESSION['nom'] =  $_COOKIE['nom'];
+                $game = unserialize($_COOKIE['jeu']);
+                $_SESSION['jeu']=serialize($game);                
+            }
             if (isset($_POST['nom'])) {
                 $_SESSION['nom'] =  $_POST['nom'];
             }
@@ -84,32 +99,56 @@ require 'MasterMind.php';
             <form action="" method="POST">
                 <label for="essai">Tetentez votre chance : </label>
                 <br>
-                <input type="text" name="essai" id="essai" required>
+                <input type="text" name="essai" id="essai">
                 <br>
                 <input type="submit" name="submit1" value="Tentez votre chance">
+                <br>
+                <input type="submit" name="exit" value ="Nouvelle Partie" id="exit">
+                <br>
+                <input type="submit" name="save" value ="Save Partie" id="save">
+
             </form>
 
             <?php
             } else {
                 // autre
+                /*if (isset($_SESSION['essai1'])|| isset($_POST['essai1'])) {
+                    $_SESSION['essai1'] = $_POST['essai1'];
+                    $essai = new Essais($_SESSION['essai1'], 0, 0);
+                    $game = unserialize($_SESSION['jeu']);
+                    //echo 'secret : ' . $game->getSecret();
+                    $game->firstTest($essai);
+                }*/
+               
 
-                if (isset($_POST['essai']))
+                if (isset($_POST['essai'])) {
                     $_SESSION['essai'] = $_POST['essai'];
+                }
                 $essai = new Essais($_SESSION['essai'], 0, 0);
                 $game = unserialize($_SESSION['jeu']);
-                //echo 'secret : ' . $game->getSecret();
-                $game->test($essai);
+                if (isset($_POST['save'])) {
+                    setcookie('jeu',serialize($game),Time()+(3600*24));
+                    setcookie('nom',$_SESSION['nom'],Time()+(3600*24));
+                    session_destroy();
+                }
+                    $game->test($essai);
+                echo 'secret : ' . $game->getSecret();
                 if (!$game->isWinner()) {
                     ?>
                 <h1>MasterMind</h1>
+                <h2><?php echo 'bonjour '.$_COOKIE['nom']?></h2>
                 <form action="" method="POST">
                     <label for="essai">Retentez votre chance : </label>
                     <br>
-                    <input type="text" name="essai" id="essai" required>
+                    <input type="text" name="essai" id="essai" >
                     <br>
                     <input type="submit" name="submit2" value="Retentez votre chance">
+                    <br>
+                    <input type="submit" name="exit" value ="Nouvelle Partie" id="exit">
+                    <br>
+                    <input type="submit" name="save" value ="Save Partie" id="save">    
                 </form>
-                <?php
+        <?php
                 for ($i = 0; $i < $game->getNbEssais(); $i++) {
                     echo '<br>essai numéro ' . ($i + 1) . ' est : ' . $game->getEssai($i)->getEssai()  . ' avec ' . $game->getEssai($i)->getBp() . ' lettres bien placées' . ' et ' . $game->getEssai($i)->getMp() . ' lettres mal placées <br>';
                 }
@@ -117,8 +156,10 @@ require 'MasterMind.php';
             } else {
                 echo 'FELECITATION ' . $_SESSION['nom'] . ' VOUS AVEZ RÉUSSI EN ' . $game->getNbEssais() . ' ESSAIS. <br> BRAVOOOOO !!!!!!!!';
                 session_destroy();
+                cookie_sestroy();
                 unset($_POST);
                 unset($_SESSION);
+                unset($_COOKIE);
             }
         }
         ?>
